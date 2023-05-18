@@ -1,0 +1,3 @@
+enigme1.png 2 
+enigme2.png 1 
+enigme3.png 3
