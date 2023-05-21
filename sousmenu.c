@@ -15,31 +15,32 @@
 Menu init_SousMenu()
 {
     Menu sous_menu;
-    sous_menu.image_bg = IMG_Load("forest.jpg");
+    sous_menu.image_bg = IMG_Load("menu/screen.jpg");
     sous_menu.pos_bg.x = 0;
     sous_menu.pos_bg.y = 0;
 
     sous_menu.nbr_boutton = 3;
 
+
 //bouton 1
     sous_menu.tab[0].Img[0] = IMG_Load("resume0.png");
     sous_menu.tab[0].Img[1] =IMG_Load("resume1.png");
-    sous_menu.tab[0].Pos.x =  SCREEN_W/3+75;
-    sous_menu.tab[0].Pos.y = SCREEN_H/3 - 30;
-
+    sous_menu.tab[0].Pos.x =  SCREEN_W/3+25;
+    sous_menu.tab[0].Pos.y = SCREEN_H/3 - 60;
     sous_menu.tab[0].num = 0;
 //bouton 2
     sous_menu.tab[1].Img[0] = IMG_Load("save0.png");
     sous_menu.tab[1].Img[1] =     IMG_Load("save1.png");
-    sous_menu.tab[1].Pos.x = SCREEN_W/3+75;
-    sous_menu.tab[1].Pos.y = SCREEN_H/3 + 75;
+    sous_menu.tab[1].Pos.x = SCREEN_W/3+25;
+    sous_menu.tab[1].Pos.y = SCREEN_H/3 + 70;
     sous_menu.tab[1].num = 1;
 
     sous_menu.tab[2].Img[0] = IMG_Load("boutons/load0.png");
     sous_menu.tab[2].Img[1] = IMG_Load("boutons/load1.png");
-    sous_menu.tab[2].Pos.x = SCREEN_W/3+150;
-    sous_menu.tab[2].Pos.y = SCREEN_H/3 + 250;
+    sous_menu.tab[2].Pos.x = SCREEN_W/3+100;
+    sous_menu.tab[2].Pos.y = SCREEN_H/3 + 270;
     sous_menu.tab[2].num = 2;
+ 	sous_menu.num_bt_actif = 0;
 
     return sous_menu;
 }
@@ -67,11 +68,11 @@ printf("%s",SDL_GetError());
 void afficher_sousmenu(Menu sous_menu,SDL_Surface *ecran)
 { 
 int i;
-Mix_Music *son;
 SDL_BlitSurface(sous_menu.image_bg, NULL, ecran, &sous_menu.pos_bg);
+	printf("%d \n",sous_menu.num_bt_actif);
 for( i=0; i < sous_menu.nbr_boutton; i++)
     {
-        if(sous_menu.tab[i].num == sous_menu.num_bt_actif)
+        if(i == sous_menu.num_bt_actif)
         {
             SDL_BlitSurface(sous_menu.tab[i].Img[1], NULL, ecran, &sous_menu.tab[i].Pos);
         }
@@ -84,8 +85,7 @@ for( i=0; i < sous_menu.nbr_boutton; i++)
 
 
 int update_SousMenu(Menu *sous_menu, SDL_Event input, int *interface) {
-Mix_Music *music;
-    int lancer_sauvegarde = 0; 
+    int lancer_sauvegarde = -1; 
     if (input.type == SDL_KEYDOWN) {
         if (input.key.keysym.sym == SDLK_UP) {
             sous_menu->num_bt_actif--;
@@ -98,15 +98,13 @@ Mix_Music *music;
             sous_menu->num_bt_actif++;
             if (sous_menu->num_bt_actif >= 2) {
                 sous_menu->num_bt_actif = 2; 
-        }
-            
-        }
+       		 }
+	}   
         else if (input.key.keysym.sym == SDLK_RETURN) {
-            *interface = sous_menu->tab[sous_menu->num_bt_actif].num;
-            if (*interface == 0) {
-                lancer_sauvegarde = 1;
+            *interface = sous_menu->num_bt_actif;
+	    lancer_sauvegarde = sous_menu->num_bt_actif;
             }
-        }
+	SDL_Delay(100);
     }
    
  return lancer_sauvegarde;

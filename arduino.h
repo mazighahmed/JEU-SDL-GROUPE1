@@ -1,0 +1,3 @@
+
+
+int arduinoReadData(char *x);

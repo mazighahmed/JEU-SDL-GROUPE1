@@ -21,53 +21,54 @@ void init_IA2(tic *ti)
     ti->back=IMG_Load("tic_tac_toe/IA2.jpg");
     ti->pos_back.x=0;
     ti->pos_back.y=0;
-    ti->pos[0].x=550;
-    ti->pos[0].y=230;
-    ti->pos[0].w=145;
-    ti->pos[0].h=145;
+    ti->pos[0].x=400;
+    ti->pos[0].y=200;
+    ti->pos[0].w=120;
+    ti->pos[0].h=120;
 
-    ti->pos[1].x=700;
-    ti->pos[1].y=230;
-    ti->pos[1].w=145;
-    ti->pos[1].h=145;
+    ti->pos[1].x=560;
+    ti->pos[1].y=200;
+    ti->pos[1].w=120;
+    ti->pos[1].h=120;
 
-    ti->pos[2].x=870;
-    ti->pos[2].y=230;
-    ti->pos[2].w=145;
-    ti->pos[2].h=145;
+    ti->pos[2].x=720;
+    ti->pos[2].y=200;
+    ti->pos[2].w=120;
+    ti->pos[2].h=120;
 
-    ti->pos[3].x=550;
-    ti->pos[3].y=370;
-    ti->pos[3].w=87;
-    ti->pos[3].h=89;
+    ti->pos[3].x=400;
+    ti->pos[3].y=340;
+    ti->pos[3].w=120;
+    ti->pos[3].h=120;
 
-    ti->pos[4].x=700;
-    ti->pos[4].y=360;
-    ti->pos[4].w=87;
-    ti->pos[4].h=89;
+    ti->pos[4].x=560;
+    ti->pos[4].y=340;
+    ti->pos[4].w=120;
+    ti->pos[4].h=120;
 
-    ti->pos[5].x=870;
-    ti->pos[5].y=360;
-    ti->pos[5].w=87;
-    ti->pos[5].h=89;
+    ti->pos[5].x=720;
+    ti->pos[5].y=340;
+    ti->pos[5].w=120;
+    ti->pos[5].h=120;
 
-    ti->pos[6].x=550;
-    ti->pos[6].y=510;
-    ti->pos[6].w=87;
-    ti->pos[6].h=89;
+    ti->pos[6].x=400;
+    ti->pos[6].y=480;
+    ti->pos[6].w=120;
+    ti->pos[6].h=120;
 
-    ti->pos[7].x=700;
-    ti->pos[7].y=510;
-    ti->pos[7].w=87;
-    ti->pos[7].h=89;
+    ti->pos[7].x=560;
+    ti->pos[7].y=480;
+    ti->pos[7].w=120;
+    ti->pos[7].h=120;
 
-    ti->pos[8].x=870;
-    ti->pos[8].y=510;
-    ti->pos[8].w=87;
-    ti->pos[8].h=89;
+    ti->pos[8].x=720;
+    ti->pos[8].y=480;
+    ti->pos[8].w=120;
+    ti->pos[8].h=120;
 
     ti->whoplay=0;
     ti->whowin=0;
+    ti->tour=0;
 }
 void afficher_tic(tic ti,SDL_Surface* ecran)
 {
@@ -81,6 +82,21 @@ void afficher_j(tic ti,SDL_Surface* ecran)
         if(ti.matrice_suivi[i]==1)
             SDL_BlitSurface(ti.x[i],NULL,ecran,&(ti.pos[i]));
 }
+
+void reset(tic *ti)
+{
+    int i;
+    for(i=0; i<9; i++)
+    {
+        ti->matrice_suivi[i]=0;
+    }
+
+    ti->whoplay=0;
+    ti->whowin=0;
+    ti->tour=0;
+
+}
+
 void afficher_machine(SDL_Surface* ecran,tic ti)
 {
     int i;
@@ -158,20 +174,35 @@ void evaluer(tic *ti)
     {
         ti->whowin=-1;
     }
+	int i;
+    if (ti->whowin != 1)
+	{
+		for (i=0;i<9 && ti->matrice_suivi[i]==-1 || ti->matrice_suivi[i]==-1 ;i++);
+			if (i==8)
+			ti->whowin=-1;
+	}
 
 
 }
 
 
-void gameover(tic ti,SDL_Surface* ecran)
+void gameover(tic *ti,SDL_Surface* ecran, char state[])
 {
-    switch(ti.whowin)
+    switch(ti->whowin)
     {
     case 1:
-        SDL_BlitSurface(ti.win,NULL,ecran,NULL);
+        SDL_BlitSurface(ti->win,NULL,ecran,NULL);
+        SDL_Flip(ecran);
+	SDL_Delay(1000);
+	reset(ti);
+        strcpy(state, "play");
         break;
     case -1:
-        SDL_BlitSurface(ti.failed,NULL,ecran,NULL);
+        SDL_BlitSurface(ti->failed,NULL,ecran,NULL);
+        SDL_Flip(ecran);
+	SDL_Delay(1000);
+	reset(ti);
+        strcpy(state, "play");
         break;
     }
 

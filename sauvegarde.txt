@@ -4,4 +4,4 @@ person
 500 400 64 128
 background
 0 1000
-2
+1

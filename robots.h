@@ -17,7 +17,7 @@ void animerEnnemi(Ennemi * e);
 void moveEnnemi(Ennemi * e, SDL_Surface *mask);
 int collisionBB(SDL_Rect posp,  SDL_Rect pose) ;
 void moveIA( Ennemi * e);
-
+void update_pos(Ennemi *e, Background BG);
 void scroll_e(Background BG, Ennemi *e, int dx);
 
 

@@ -144,6 +144,14 @@ void scroll_e(Background BG, Ennemi *e, int dx)
 	}
 }
 
+void update_pos(Ennemi *e, Background BG)
+{
+
+            e->pos_abs.x = e->pos2.x + BG.camera_pos.x;
+            e->pos_abs.y = e->pos2.y + BG.camera_pos.y;
+            e->pos_abs.w = 64;
+            e->pos_abs.h = 64;
+}
      
 
 

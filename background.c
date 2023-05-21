@@ -118,3 +118,75 @@ void animerBack(Background *b)
 
 
 }
+
+
+void init_ordi(ordi * b)
+{
+    b->img=IMG_Load("contour.png");
+    if(b->img==NULL)
+        printf("error5");
+
+
+    b->pos.x=0;
+    b->pos.y=-1000;
+    b->state=0;
+
+}
+
+void afficher_ordi(ordi b,SDL_Surface *screen)
+{
+       if (b.state==1)
+       SDL_BlitSurface(b.img, NULL, screen, &b.pos);
+
+}
+
+void scroll_pos(Background BG,SDL_Rect *b, int dx)
+{
+    if (BG.direction != -1)
+    {
+        switch(BG.direction){
+            case 0:
+                b->y-= dx;
+
+                break;
+            case 1 :
+                b->y+= dx;
+
+                break;
+            case 2: 
+                b->x-= dx;
+
+                break;
+            case 3:
+                b->x+= dx;
+
+                break;
+        }
+    }
+}
+
+
+void scroll_ordi(Background BG,ordi *b, int dx)
+{
+    if (BG.direction != -1)
+    {
+        switch(BG.direction){
+            case 0:
+                b->pos.y -= dx;
+
+                break;
+            case 1 :
+                b->pos.y += dx;
+
+                break;
+            case 2: 
+                b->pos.x -= dx;
+
+                break;
+            case 3:
+                b->pos.x += dx;
+
+                break;
+        }
+    }
+}

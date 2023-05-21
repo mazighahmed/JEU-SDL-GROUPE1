@@ -1,5 +1,5 @@
-prog:main.o image.o bouton.o menu.o texte.o player.o background.o robots.o enigme.o collision.o score.o door.o mini-map.o sousmenu.o IA2.o enigme2.o
-	gcc main.o image.o bouton.o menu.o texte.o player.o background.o robots.o enigme.o collision.o score.o door.o mini-map.o sousmenu.o enigme2.o IA2.o -o prog -lSDL -lSDL_image -lSDL_mixer -lSDL_ttf
+prog:main.o image.o bouton.o menu.o texte.o player.o background.o robots.o enigme.o collision.o score.o door.o mini-map.o sousmenu.o IA2.o enigme2.o arduino.o
+	gcc main.o image.o bouton.o menu.o texte.o player.o background.o robots.o enigme.o collision.o score.o door.o mini-map.o sousmenu.o enigme2.o arduino.o IA2.o -o prog -lSDL -lSDL_image -lSDL_gfx -lSDL_mixer -lSDL_ttf
 main.o:main.c
 	gcc -c main.c -g
 texte.o:texte.c 
@@ -32,3 +32,5 @@ IA2.o:IA2.c
 	gcc -c IA2.c -g
 enigme2.o:enigme2.c
 	gcc -c enigme2.c -g
+arduino.o:arduino.c
+	gcc -c arduino.c -g

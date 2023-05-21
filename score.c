@@ -26,8 +26,8 @@ if ( (SDL_GetTicks() - timer) >= 1000)
 
 void savescore(scoreinfo s,char *filename)
 {
-FILE *f=fopen(filename,"a");
-	fprintf(f,"%d %d %s\n",s.score,s.temps, s.nom_player);
+	FILE *f=fopen(filename,"a+");
+	fprintf(f,"%d %d %s\n",s.score,s.temps/1000, s.nom_player);
 	fclose(f);
 }
 
@@ -55,12 +55,12 @@ while (fscanf(f,"%d %d %s",&trois[i].score, &trois[i].temps, trois[i].nom_player
 	j=0;	
 	while(j<3)
 		{
-				trois[j].pos_score.x = SCREEN_W/3;
-				trois[j].pos_score.y = SCREEN_H/2 + j * 50;
+				trois[j].pos_score.x = 100;
+				trois[j].pos_score.y = SCREEN_H/3 + j * 150;
 				char str[20];
 				char str2[20];
-				sprintf(str, "%d  ", trois[j].score); 
-				sprintf(str2, "%d  ", trois[j].temps); 
+				sprintf(str, "SCORE %d ", trois[j].score); 
+				sprintf(str2, "PLAYTIME %dsec NAME ", trois[j].temps); 
 				strcat(str, str2); 
 				strcat(str, trois[j].nom_player);
 				txte.txt = TTF_RenderText_Blended(txte.police, str, txte.color);

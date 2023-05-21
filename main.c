@@ -4,6 +4,7 @@
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
 #include <SDL/SDL_mixer.h>
+#include <SDL/SDL_rotozoom.h>
 #include <SDL/SDL_ttf.h>
 #include "image.h"
 #include "bouton.h"
@@ -21,6 +22,7 @@
 #include "mini-map.h"
 #include "sousmenu.h"
 #include "IA2.h"
+#include "arduino.h"
 
 int main()
 {
@@ -29,22 +31,26 @@ int main()
     char input[20];
     Bouton bouton[20];
     int regl;
-
+	double rotation =0;
+	double zoom =0;
+	
+    int rob =0;
     background backg;
     SDL_Surface* screen=NULL;
     Image Play0, Exit0, Option0, Back0, bg, bg2, menu;
     Image Play1, Exit1, Option1, Back1;
-    Image ordi;////////////////////////////////
+   
     Image fs_0, fs_1,mus_0, mus_1, Scroll, ms, reg_0,reg_1,up_0,up_1,down_0,down_1,right_0,right_1,left_0,left_1,p_0,p_1,p2_0,p2_1,confirm0, confirm1;
-    SDL_Surface *bad, *good, *good_rot, *bad_rot, *name_hud, *ecran;
+    SDL_Surface *bad, *good, *good_rot, *bad_rot, *name_hud, *ecran, *win, *loose;
     Image GUI ,GUI2;
     logo Logo;
     texte score, score2, your_name;
     Player j, j2, j1;
     Uint32 dt, t_prev, timer;
     Background BG, BG2, bob, BG1;
-    Ennemi e, e2;
-	SDL_Rect rect1, rect2;
+    Ennemi e, e2, e3, e4, e5, e6, e7, e8;
+	Ennemi *E;
+    SDL_Rect rect1, rect2;
     Enigme eni, eni1, eni2;
     char c[1];
     char name[20] = "";
@@ -53,7 +59,7 @@ int main()
     int enigme = 0;
     int game_mode =1;
 
-    Mix_Music* music0;
+    Mix_Music* music0, *game, *menu_mus;
     Mix_Chunk* click;
     Mix_Chunk* motion;
     SDL_Event event;
@@ -62,6 +68,11 @@ int main()
     Uint8 *bebsi;
 
     beb bab1,bab2,bab3;
+   
+   ordi contour;
+	
+    SDL_Rect or;
+
 
     //SDL INIT
     if(IMG_Init(IMG_INIT_PNG)==-1)
@@ -75,6 +86,8 @@ int main()
     click = Mix_LoadWAV("click2.wav");
     motion = Mix_LoadWAV("motion.wav");
     music0 = Mix_LoadMUS("Music0.mp3");
+  game = Mix_LoadMUS("music_game.mp3");
+  menu_mus = Mix_LoadMUS("music_menu.mp3");
 
     //INIT TEXTE
 
@@ -111,22 +124,22 @@ int main()
     bouton[4] = initialiser_bouton(mus_0, mus_1);
     bouton[6] = initialiser_bouton(Scroll, Scroll);
     texte text3,text1,text2,text4, texte5;
-    initialiser_texte(&text1,300,460);
+    initialiser_texte(&text1,300,220);
     initialiser_texte(&text2,300,110);
-    initialiser_texte(&text3,1050,110);
-    initialiser_texte(&text4,1050,460);
+    initialiser_texte(&text3,300,320);
+    initialiser_texte(&text4,300,420);
     initialiser_texte(&texte5,430,350);
     initialiser_texte(&your_name,315,200);
     reg_0 = initialiser_image("boutons/mus_0.png", 770, 250);
     reg_1 = initialiser_image("boutons/mus_1.png", 770, 250);
     up_0 = initialiser_image("boutons/mus_0.png", 250, 150);
     up_1 = initialiser_image("boutons/mus_1.png", 250, 150);
-    down_0 = initialiser_image("boutons/mus_0.png", 250, 500);
-    down_1 = initialiser_image("boutons/mus_1.png", 250, 500);
-    right_0 = initialiser_image("boutons/mus_0.png", 1000, 150);
-    right_1 = initialiser_image("boutons/mus_1.png", 1000, 150);
-    left_0 = initialiser_image("boutons/mus_0.png", 1000, 500);
-    left_1 = initialiser_image("boutons/mus_1.png", 1000, 500);
+    down_0 = initialiser_image("boutons/mus_0.png", 250, 250);
+    down_1 = initialiser_image("boutons/mus_1.png", 250, 250);
+    right_0 = initialiser_image("boutons/mus_0.png", 250, 350);
+    right_1 = initialiser_image("boutons/mus_1.png", 250, 350);
+    left_0 = initialiser_image("boutons/mus_0.png", 250, 450);
+    left_1 = initialiser_image("boutons/mus_1.png", 250, 450);
     p_0 = initialiser_image("boutons/one_player0.png", SCREEN_W/3 + 75, SCREEN_H/3 + 100);
     p_1 = initialiser_image("boutons/one_player1.png", SCREEN_W/3 + 75, SCREEN_H/3 + 100);
     p2_0 = initialiser_image("boutons/two_player0.png", SCREEN_W/3 + 75, SCREEN_H/3 + 250);
@@ -134,7 +147,7 @@ int main()
     confirm0 = initialiser_image("boutons/confirm0.png", 500, 500);
     confirm1 = initialiser_image("boutons/confirm1.png", 500, 500);
     name_hud = IMG_Load("name.png");
- ecran = IMG_Load("menu/screen.jpg");
+    ecran = IMG_Load("menu/screen.jpg");
     bouton[7] = initialiser_bouton(reg_0, reg_1);
     bouton[8] = initialiser_bouton(up_0, up_1);
     bouton[9] = initialiser_bouton(down_0, down_1);
@@ -144,11 +157,20 @@ int main()
     bouton[13] = initialiser_bouton(p_0, p_1);
     bouton[14] = initialiser_bouton(p2_0, p2_1);
     bouton[15] = initialiser_bouton(confirm0, confirm1);
+	if( (good = IMG_Load("good.png")) == NULL)
+		printf("ERROR:%s \n", SDL_GetError());
+	if( (bad = IMG_Load("bad.png")) == NULL)
+		printf("ERROR:%s \n", SDL_GetError());
+	if( (win = IMG_Load("win.jpg")) == NULL)
+		printf("ERROR:%s \n", SDL_GetError());
+	if( (loose = IMG_Load("loose.jpg")) == NULL)
+		printf("ERROR:%s \n", SDL_GetError());
 
 //INITIALISATION JEU
+	int musicc = 0;
     SDL_Rect pos_abs, pos_abs2;
-	Enigme2 en;
-    scoreinfo info, yo[3];
+    Enigme2 en;
+    scoreinfo info, yo[100];
     info.score=0;
     info.temps=0;
     int best=0;
@@ -158,13 +180,15 @@ int main()
     minimap mini;
     tic ti;
     Menu sm;
+    char ard;
 	
     bg2 = initialiser_image("forest.jpg", 0, 0);
     GUI = initialiser_image("GUI.png", 0, 0);
     GUI2 = initialiser_image("GUI.png", 640, 0);
     menu = initialiser_image("menu/menu.png", 0, 0);
     texte5.txt = TTF_RenderText_Blended(texte5.police, name, texte5.color);
-        
+
+        init_IA2(&ti);
         sm =  init_SousMenu();
         init_map(&mini);
         initialiser_joueur(&j, "player_ahmed.png", 500,400);
@@ -174,9 +198,7 @@ int main()
         init_door(&bab3,1200,1000,"biben/3.png", 648, -415);
         init_door(&bab2,400,-60,"biben/2.png",1600, 50);
         init_door(&bab1,650,400,"biben/1.png", 648, 35);
-        //init_key(&bab3.k,1700,400);
-        //init_key(&bab2.k,1000,1000);
-        //init_key(&bab1.k);
+        init_ordi(&contour);
 
         initBack2(&BG2);
         initBack1(&BG1);
@@ -184,21 +206,36 @@ int main()
         initialiser_joueur(&j2, "character_karim.png", 960, 400);
 	j2.img_vie.pos1.x = 163+640;
         initEnnemi(&e, 500, 600);
+        initEnnemi(&e3, 500, -150);
+        initEnnemi(&e4, 500, -150);
+        initEnnemi(&e5, 1300, 600);
+        initEnnemi(&e6, 1300, 600);
+        initEnnemi(&e7, 1300, -500);
+        initEnnemi(&e8, 1300, -500);
+
         initEnnemi(&e2, 1240, 600);
     strcpy(backg.state, "menu");
     initialiser_score(&score);
     initialiser_score2(&score2);
+	or.x=450;
+	or.y=300;
+	or.h=20;
+	or.w=50;
 //MANETTE
 
     //GAME LOOP
     //AFFICHAGE ANIMATION LOGO
     //afficher_logo(&Logo, screen);
 
-
-
+     //system("stty -F /dev/ttyS3 9600 -parenb cs8 -cstopb");
+Mix_PlayMusic(menu_mus, -1);
     timer = SDL_GetTicks();
     while (!backg.done)
     {
+	ard = '\0';
+	//arduinoReadData(&ard);
+	if (ard != '\0')
+	   printf("%c \n", ard);
         t_prev = SDL_GetTicks();
         //RENDER MENU
         if (!strcmp(backg.state, "menu"))
@@ -209,7 +246,7 @@ int main()
         }
         else if (!strcmp(backg.state, "options"))
         {
-           SDL_BlitSurface(ecran, NULL, screen, NULL);
+            SDL_BlitSurface(ecran, NULL, screen, NULL);
             SDL_BlitSurface(ms.img, NULL, screen, &ms.pos1);
             afficher_options(bouton, screen);
         }
@@ -241,8 +278,16 @@ int main()
                 afficher_beb(bab2,screen);//afficher beb 2
                 afficher_beb(bab1,screen);//afficher beb 1
                 //SDL_BlitSurface(ordi.img,NULL,screen,&ordi.pos1);
+		afficher_ordi(contour,screen);
                 afficher_joueur(j, screen);
                 afficherEnnemi(e, screen);
+                afficherEnnemi(e3, screen);
+                afficherEnnemi(e4, screen);
+                afficherEnnemi(e5, screen);
+                afficherEnnemi(e6, screen);
+                afficherEnnemi(e7, screen);
+                afficherEnnemi(e8, screen);
+		
                 //SDL_BlitSurface(bob.img, &bob.camera_pos, screen, &bob.pos); //hedhi li tahser lvision
 		//bob.pos.x = j.pos.x - SCREEN_W/2;
                 if (show_map ==1)
@@ -253,15 +298,60 @@ int main()
 
                 afficher_stats(j, screen, score);
                 if (best)
-                    bestscore("scores.txt", yo, score, screen);
+		{
+			SDL_BlitSurface(ecran, NULL, screen, NULL);
+                    bestscore("scores.txt", yo, texte5, screen);
+
+		}
             }
         }
         else if (!strcmp(backg.state, "enigme"))
         {
-            if (en.etat == 0){
-           SDL_BlitSurface(ecran, NULL, screen, NULL);
+            	if (en.etat == 0){
+           	SDL_BlitSurface(ecran, NULL, screen, NULL);
                 afficherEnigme2(&en, screen);
 		}
+		else if (en.etat == 1)
+		{
+			SDL_BlitSurface(ecran, NULL, screen, NULL);
+			good_rot = rotozoomSurface(good, rotation, zoom, 1);
+			rotation+=2;
+			zoom += 0.0025;
+			SDL_Rect pos = {600,300,0,0};
+			pos.x -= good_rot->w/2;
+			pos.y -= good_rot->h/2;
+			SDL_BlitSurface(good_rot, NULL, screen, &pos);
+			SDL_FreeSurface(good_rot);
+		}
+		else if (en.etat == -1)
+		{
+			SDL_BlitSurface(ecran, NULL, screen, NULL);
+			bad_rot = rotozoomSurface(bad, rotation, zoom, 1);
+			rotation+=2;
+			zoom += 0.0025;
+			SDL_Rect pos = {600,300,0,0};
+			pos.x -= bad_rot->w/2;
+			pos.y -= bad_rot->h/2;
+			SDL_BlitSurface(bad_rot, NULL, screen, &pos);	
+			SDL_FreeSurface(bad_rot);
+		}
+			if(rotation >=360)
+			{
+				enigme =0;
+				en.etat =0;
+				rotation=0;
+				zoom =0;
+				strcpy(backg.state, "play");
+				if (j.vie <=0)
+				{
+					strcpy(backg.state, "loose");
+				}
+				if (rob >= 7)
+				{
+					strcpy(backg.state, "win");
+				}
+		             
+			}		
         }
         else if (!strcmp(backg.state, "name"))
         {
@@ -293,15 +383,27 @@ int main()
 		SDL_BlitSurface(bouton[13].image[bouton[13].actif].img, NULL, screen, &bouton[13].image[bouton[13].actif].pos1);
 		SDL_BlitSurface(bouton[14].image[bouton[14].actif].img, NULL, screen, &bouton[14].image[bouton[14].actif].pos1);
         }
-	/*
+	
 	else if (!strcmp(backg.state, "tic"))
         {
+	    gameover(&ti,screen,backg.state);
             afficher_tic(ti,screen);
             afficher_j(ti,screen);
             afficher_machine(screen,ti);
             evaluer(&ti);
-            gameover(ti,screen);
-        }*/
+		if (ti.whowin == 1)
+			{
+				j.score +=25;
+			}
+        }
+	else if (!strcmp(backg.state, "loose"))
+        {
+            SDL_BlitSurface(loose, NULL, screen, NULL);
+        }
+	else if (!strcmp(backg.state, "win"))
+        {
+            SDL_BlitSurface(win, NULL, screen, NULL);
+        }
 
         SDL_Flip(screen);
         //EVENT
@@ -339,6 +441,13 @@ int main()
 					texte5.txt = TTF_RenderText_Blended(texte5.police, j.name, texte5.color);
 				}
 			}
+			if (!strcmp(input, "confirm"))
+			{
+				if(j.name[0] == '\0')
+				{
+					strcpy(input, "");
+				}
+			}
 		}
 
 		if (game_mode == 2){
@@ -359,7 +468,7 @@ int main()
 		{
 		    	input_select(input, event, bouton, motion);
 		}
-		/*
+		
             else if (!strcmp(backg.state, "tic"))
             {
                 if(ti.whoplay==0)
@@ -374,23 +483,28 @@ int main()
                                 {
                                     ti.matrice_suivi[i]=1;
                                     ti.whoplay=1;
+			            ti.tour++;
                                 }
-                                x=rand()%9;
-                                while(ti.matrice_suivi[x]==1 || ti.matrice_suivi[x]==-1)
-                                {
-                                    x=rand()%9;
-                                }
-                                if(ti.whoplay==1)
-                                {
-                                    ti.matrice_suivi[x]=-1;
-                                }
-                                ti.whoplay=0;
+				if(ti.tour<8)
+				{
+		                        x=rand()%9;
+		                        while(ti.matrice_suivi[x]==1 || ti.matrice_suivi[x]==-1)
+		                        {
+		                            x=rand()%9;
+		                        }
+		                        if(ti.whoplay==1)
+		                        {
+		                            ti.matrice_suivi[x]=-1;
+					    ti.tour++;
+		                        }
+		                        ti.whoplay=0;
+				}
                             }
                         }
                     }
                 }
             }
-		*/
+		
 	}
           if (!strcmp(backg.state, "reglage"))
             {
@@ -547,14 +661,7 @@ int main()
                 j.dir=-1;
                 BG.direction = -1;
             }
-            if(keystates[SDLK_e])
-            {
-                j.acc += 0.005;
-            }
-            else if(keystates[SDLK_a])
-            {
-                j.acc -= 0.001;
-            }
+ 
             if (collisionBB(j.pos,bab3.k.pos)==1 )
             {
                 bab3.k.state=1;
@@ -565,6 +672,12 @@ int main()
                 bab2.k.state=1;
                 info.score+=250;
                 j.score+=250;
+            }
+            if (collisionBB(j.pos,bab1.k.pos)==1 && bab1.k.state==0)
+            {
+                bab1.k.state=1;
+                info.score+=150;
+                j.score+=150;
             }
             if (collisionBB(j.pos,bab1.k.pos)==1 && bab1.k.state==0)
             {
@@ -585,7 +698,7 @@ int main()
 		else 
 		bab1.t.state=1;
 
-		if (bab1.t.state==0 && keystates[SDLK_n] && bab1.k.state==1)
+		if (bab1.t.state==0 && keystates[SDLK_e] && bab1.k.state==1)
 		{bab1.state=1;
 		bab1.t.state=1;}
 
@@ -595,7 +708,7 @@ int main()
 		else 
 		bab2.t.state=1;
 
-		if (bab2.t.state==0 && keystates[SDLK_n] && bab2.k.state==1)
+		if (bab2.t.state==0 && keystates[SDLK_e] && bab2.k.state==1)
 		{bab2.state=1;
 		bab2.t.state=1;}
 
@@ -605,10 +718,17 @@ int main()
 		else 
 		bab3.t.state=1;
 
-		if (bab3.t.state==0 && keystates[SDLK_n] && bab3.k.state==1)
+		if (bab3.t.state==0 && keystates[SDLK_e] && bab3.k.state==1)
 		{bab3.state=1;
 		bab3.t.state=1;}
 		}
+	    if (contour.state==1 && keystates[SDLK_e])
+			strcpy(backg.state, "tic");
+
+	    if(collisionBB(j.pos,or)==1)
+		contour.state=1;
+	    else
+		contour.state=0;
         if (game_mode == 2)
         {
             keystates = SDL_GetKeyState(NULL);
@@ -677,14 +797,6 @@ int main()
             {
                 j1.dir=-1;
                 BG1.direction = -1;
-            }
-            if(keystates[SDLK_e])
-            {
-                j1.acc += 0.005;
-            }
-            else if(keystates[SDLK_a])
-            {
-                j1.acc -= 0.001;
             }
             if (keystates[SDLK_SPACE] && j1.dir != 0 && j1.dir != 1 && j1.saut.state != 1)
             {
@@ -786,7 +898,7 @@ int main()
             show_map =0;
         }
 
-        if (keystates[SDLK_l])
+        if (keystates[SDLK_p])
         {
             strcpy(backg.state, "sousmenu");
         }
@@ -794,12 +906,12 @@ int main()
         {
             strcpy(backg.state, "tic");
         }
-        if (keystates[SDLK_j])
+        if (keystates[SDLK_i])
         {
             best= 1;
         }
         else
-            best = 0;
+            best =0;
        
 }
         //UPDATE
@@ -810,20 +922,42 @@ int main()
 		if (game_mode ==1){
             move_joueur(&j, dt, &BG);
             scrolling(&BG, BG.direction,j.dx);
-
-            //update pos_absolue enemy
-            e.pos_abs.x = e.pos2.x + BG.camera_pos.x;
-            e.pos_abs.y = e.pos2.y + BG.camera_pos.y;
-            e.pos_abs.w = 64;
-            e.pos_abs.h = 64;
+  	    update_pos(&e, BG);
+  	    update_pos(&e3, BG);
+  	    update_pos(&e4, BG);
+  	    update_pos(&e5, BG);
+  	    update_pos(&e6, BG);
+  	    update_pos(&e7, BG);
+  	    update_pos(&e8, BG);
             moveEnnemi(&e, BG.mask);
             scroll_e(BG, &e, j.dx);
+            moveEnnemi(&e3, BG.mask);
+            scroll_e(BG, &e3, j.dx);
+            moveEnnemi(&e4, BG.mask);
+            scroll_e(BG, &e4, j.dx);
+            moveEnnemi(&e5, BG.mask);
+            scroll_e(BG, &e5, j.dx);
+            moveEnnemi(&e6, BG.mask);
+            scroll_e(BG, &e6, j.dx);
+            moveEnnemi(&e7, BG.mask);
+            scroll_e(BG, &e7, j.dx);
+            moveEnnemi(&e8, BG.mask);
+            scroll_e(BG, &e8, j.dx);
             scroll_biben(BG, &bab3,j.dx);
             scroll_biben(BG, &bab2,j.dx);
             scroll_biben(BG, &bab1,j.dx);
+	    scroll_ordi(BG,&contour,j.dx);
+	    scroll_pos(BG,&or, j.dx);
             saut(&j, &BG);
             animer_joueur(&j);
             animerEnnemi(&e);
+            animerEnnemi(&e3);
+            animerEnnemi(&e4);
+            animerEnnemi(&e5);
+            animerEnnemi(&e6);
+            animerEnnemi(&e7);
+            animerEnnemi(&e8);
+
 	    MAJMinimap(pos_abs,  &mini, BG.camera_pos, 20);
 
             animerBack(&BG);
@@ -864,7 +998,40 @@ int main()
                 animerEnnemi(&e2);
             }
             if (collisionBB(e.pos2, j.pos))
+		{
                 strcpy(backg.state, "enigme");
+		E = &e;
+		}
+            if (collisionBB(e3.pos2, j.pos))
+		{
+                strcpy(backg.state, "enigme");
+		E = &e3;
+		}
+            if (collisionBB(e4.pos2, j.pos))
+		{
+                strcpy(backg.state, "enigme");
+		E = &e4;
+		}
+            if (collisionBB(e5.pos2, j.pos))
+		{
+                strcpy(backg.state, "enigme");
+		E = &e5;
+		}
+            if (collisionBB(e6.pos2, j.pos))
+		{
+                strcpy(backg.state, "enigme");
+		E = &e6;
+		}
+           if (collisionBB(e7.pos2, j.pos))
+		{
+                strcpy(backg.state, "enigme");
+		E = &e7;
+		}
+           if (collisionBB(e8.pos2, j.pos))
+		{
+                strcpy(backg.state, "enigme");
+		E = &e8;
+		}
         }
 
         if (!strcmp(backg.state, "enigme"))
@@ -878,26 +1045,35 @@ int main()
             {
                 if (choix == en.repj)
                 {
-                    enigme = 0;
-                    strcpy(backg.state, "play");
+	            rob++;
+		    en.etat = 1;
+                    E->pos2.x = -10000;
                     choix = 0;
-                    e.pos2.x = -150;
                     j.score += 300;
                 }
                 else
                 {
-		SDL_Delay(250);
-		  choix = 0;
-                    j.vie -= 1;
+			en.etat = -1;
+			choix = 0;
+                    	j.vie -= 1;
                 }
             }
         }
         if (!strcmp(backg.state, "sousmenu"))
         {
             save = update_SousMenu(&sm, event, &save);
-            if (save)
+            if (save == 0)
             {
-                charger( &j, &BG, "sauvegarde.txt");
+                strcpy(backg.state, "play");
+            }
+            if (save == 1)
+            {
+		sauvegarder (j, BG, "sauvegarde.txt");
+                strcpy(backg.state, "play");
+            }
+            if (save == 2)
+            {
+		charger (&j, &BG , "sauvegarde.txt");
                 strcpy(backg.state, "play");
             }
         }
@@ -922,18 +1098,19 @@ int main()
             }
 
         }
-        /*
-        if( Mix_PlayingMusic() == 0 )
+        
+        if(!strcmp(backg.state, "play")&& musicc==0 )
         {
                 //Play the music
-        	Mix_PlayMusic(music0, -1);
+		Mix_PauseMusic();
+        	Mix_PlayMusic(game, -1);
+		musicc = 1;
         }
-        */
+        
 	strcpy(input, "");
         if ( (SDL_GetTicks() - timer) >= 1000)
         {
             info.temps = SDL_GetTicks();
-            //j.score += 1;
         }
         dt= (SDL_GetTicks()-t_prev);
     }
@@ -955,7 +1132,6 @@ int main()
     SDL_FreeSurface(j.shadow.img);
     SDL_FreeSurface(j.anim.image.img);
     liberer_boutons(bouton);
-//liberer_logo(&Logo);
     Mix_FreeChunk(click);
     Mix_FreeMusic(music0);
     Mix_CloseAudio();

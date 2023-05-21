@@ -130,7 +130,7 @@ void saut(Player* joueur, Background *BG)
 	{
 		joueur->pos.y -= (joueur->saut.dy - joueur->saut.gravite);	
 		joueur->saut.gravite += 0.5;
-		joueur->shadow.pos1.y = joueur->saut.y0 + 120;
+		joueur->shadow.pos1.y = joueur->saut.y0 + 110;
 		joueur->pos_abs.y = joueur->shadow.pos1.y + BG->camera_pos.y;
 		if (joueur->pos.y >= joueur->saut.y0)
 		{
@@ -143,10 +143,10 @@ void saut(Player* joueur, Background *BG)
 void update_pos_abs(SDL_Rect *pos_abs, Player *j, Background *BG)
 {
 		j->shadow.pos1.x = j->pos.x;
-		j->shadow.pos1.y = j->pos.y + 120;
+		j->shadow.pos1.y = j->pos.y + 110;
 		j->pos_abs.x = j->shadow.pos1.x + BG->camera_pos.x;
 		if(j->saut.state == 1)
-			j->shadow.pos1.y = j->saut.y0 + 120;
+			j->shadow.pos1.y = j->saut.y0 + 110;
 		else
 			j->pos_abs.y = j->shadow.pos1.y + BG->camera_pos.y;
 	pos_abs->w = j->shadow.img->w;
